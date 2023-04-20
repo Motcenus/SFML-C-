@@ -1,0 +1,127 @@
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <math.h>
+
+using namespace sf;
+
+
+class Button{
+public:
+    bool state = 0;
+    RectangleShape rect,r;
+    bool hover = 0;
+    Vector2f Button_Size;
+
+    Button(){
+        rect.setSize(Vector2f(200,100));
+        rect.setFillColor(Color::White);
+        rect.setOutlineThickness(2);
+        rect.setOutlineColor(Color::Black);
+    }
+
+    void Button_Position(Vector2f Position){
+        rect.setPosition(Position);
+    }
+
+    bool Hover(Vector2i mPos ,RenderWindow *app){
+        if(mPos.x<rect.getPosition().x+200 && mPos.x>rect.getPosition().x && mPos.y<rect.getPosition().y+100 && mPos.y>rect.getPosition().y){
+            rect.setFillColor(Color::Blue);
+            return 1;
+        }else rect.setFillColor(Color::White);
+    }
+
+
+    bool Click(RectangleShape *rec){
+        if(hover && Mouse::isButtonPressed(Mouse::Left)){
+            rect.setFillColor(Color::Red);
+            rec->rotate(2.5);
+            rec->move(Vector2f(0.001*rec->getRotation(),0));
+
+            if(rec->getPosition().x>450){
+                rec->setPosition(-50,100);
+            }
+
+
+            if(int(rec->getRotation())%100==0){
+                rec->setFillColor(Color(255*sin(rec->getRotation()),255*sin(2*rec->getRotation()),255*sin(3*rec->getRotation())));
+            }
+
+            return 1;
+        }else return 0;
+    }
+
+
+
+    void Button_Text(std::string txt, Color clr, RenderWindow *app){
+        sf::Font font;
+        font.loadFromFile("arial.ttf");
+        sf::Text text(txt, font);
+        text.setCharacterSize(30);
+        text.setStyle(sf::Text::Bold);
+        text.setFillColor(clr);
+        text.setPosition(rect.getPosition().x+30,rect.getPosition().y+(100-text.getCharacterSize())/2);
+
+        app->draw(text);
+
+    }
+    void draw_Button(RenderWindow *app){
+        app->draw(rect);
+
+        if(hover){
+            Button_Text("Click Here",Color::Green,app);
+        }else{
+            Button_Text("Click Here",Color::Black,app);
+        }
+    }
+};
+
+
+
+
+
+int main()
+{
+    sf::RenderWindow app(sf::VideoMode(400, 400), "SFML window");
+
+    Button btn;
+    btn.Button_Position(Vector2f(100,290));
+    Vector2i mPos;
+
+    RectangleShape rec;
+    rec.setSize(Vector2f(100,100));
+    rec.setFillColor(Color::White);
+    rec.setOutlineThickness(2);
+    rec.setOutlineColor(Color::Black);
+    rec.setOrigin(50,50);
+    rec.setPosition(200,100);
+    while (app.isOpen())
+    {
+        sf::Event event;
+        while (app.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                app.close();
+        }
+
+        mPos.x = Mouse::getPosition(app).x;
+        mPos.y = Mouse::getPosition(app).y;
+
+        btn.hover = btn.Hover(mPos, &app);
+
+
+        btn.Click(&rec);
+
+        app.clear(Color::Cyan);
+
+
+        btn.draw_Button(&app);
+
+        app.draw(rec);
+
+
+
+        app.display();
+    }
+
+    return EXIT_SUCCESS;
+}
